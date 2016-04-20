@@ -1,176 +1,148 @@
-/* Stylesheet by Adam Mandelman, 2016 */
+@import url(https://fonts.googleapis.com/css?family=Lato:400,300);
+/* 575 boilerplate style.css */
+
 
 body {
-    background-color: black;
-}
-
-p {
     margin: 0;
-    padding: 2px;
+    padding: 0;
+    font-family: Lato, sans-serif;
+    color: #3d3d3d;
 }
-
 #header {
-    width: 100%;
-    background-color:black;
-    color: white;
-    font-family: "Impact", "Charcoal", sans-serif;
-    text-align: left;
-    font-size: 5em;
-    padding-left: 70px;
-/*    padding: 0px, 0px, 0px, 0px;*/
-    display: inline-block;
+    height: 90px;
+    background: #d3d3d3;
 }
 
-
-#tagline {
-    height: 40px;   
-    color: white;
-    font-family: "Open Sans", sans-serif;
-    text-align: left;
-    font-size: 1.6em;
-    padding-left: 70px;    
+#context{
+    height: 150px;
+    position:absolute;
+    left: 725px; 
+    top: 500px;
+    padding-right: 20px;
 }
 
-#context {
-    color: black;
-    font-family: "Open Sans", sans-serif;
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
+h1 {
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    left: 20px;
+    top: 10px;
 }
 
-#context-paragraph{
-    font-size: 0.8em;
-    font-weight: normal;
-    text-align: left;
-    
+h2.subheader {
+    position: absolute;
+    left: 258px;
+    top: 53px;
+    padding: 0;
+    margin: 0;
+}
+.states {
+    fill: rgb(255, 240, 240);
+    stroke: rgba(106, 106, 106, 0.76);
+    stroke-width: 1.5px;
 }
 
-#map {
-    height: 600px;
-    width: 100%;
-    display: inline-block;    
-    border-color: white;
-    border-style: solid;    
+.map {
+    border: 1px solid #bfbfbf;
+    margin: 10px 0 0 5px;
 }
 
-
-#Mean-text {
-    font-weight: bold;
-}
-
-#Maximum-text {
-    font-weight: bold;
-}
-
-#Minimum-text {
-    font-weight: bold;
-}
-
-.context-container {
-    width: 370px;
-    height: 215px;
-    background-color: rgba(255,255,255,1);
-    text-align: left;
-    padding-left: 10px;
-    border: solid gray 1px;
-}
-
-.legend-control-container {
-    width: 380px;
-    height: 340px;
-    background-color: rgba(255,255,255,1);
-    padding: -20px;
-    line-height: 45px;
-    text-align: center;
-    border: solid gray 1px;
-}
-
-#temporal-legend {
-    width: 380px;
-    height: 20px;
-    color: black;
-    background-color: rgba(255,255,255,1);
-    padding: 0px;
-    line-height: 20px;
-    text-align: center;
-}
-
-.sequence-control-container {
-    width: 338px;
-    height: 65px;
-    background-color: rgba(255,255,255,1);
-    padding: 10px;
-    line-height: 45px;
-    text-align: center;
-    border: solid gray 1px;
-}
-
-.range-slider {
-    width: 200px;
-}
-
-.all {
-    background-color: rgb(128, 128, 128);
-    float:left;
-    margin: 0px 1px;
-    border-radius: 4px;
-    border-color: rgba(128, 128, 128, 0.7);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.whooping {
-/*    font-family: Helvetica, sans-serif;*/
-    background-color: rgba(33, 225, 241, 0.9);    
-    float:left;
-    margin: 0px 1px;
-    border-radius: 4px;
-    border-color: rgba(33, 225, 241, 0.4);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.measles {
-    background-color: rgba(191, 1, 16, 0.6);
-    float:left;
-    margin: 0px 1px;
-    border-radius: 4px;
-    border-color: rgba(191, 1, 16, 0.6);
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
-}
-
-.mumps {
-    background-color: rgba(162, 54, 255, 0.6);
-    float:left;
-    margin: 0px 1px;
-    border-radius: 4px;
-    border-color: rgba(162, 54, 255, 0.6);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.pox {
-    background-color: rgba(240, 232, 35, 0.8);
-    float:left;
-    margin: 0px 1px;
-    border-radius: 4px;
-    border-color: rgba(240, 232, 35, 0.8);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.range-slider {
-    width: 68%;
-}
-
-#forward {
+.chart {
     float: right;
+    margin: 7px 20px 0 0;
 }
 
-#reverse {
-    float: left;
+.chartBackground {
+    fill: rgb(255, 255, 255);
+}
+
+.chartFrame {
+    fill: none;
+    shape-rendering: crispEdges;
+}
+
+.chartTitle {
+    fill: black;
+    font-family: sans-serif;
+    font-size: 1.3em;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #999;
+    stroke-width: 3px;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    fill: black;
+    font-family: sans-serif;
+    font-size: 0.7em;   
+}
+
+.gratLines {
+    fill: none;
+    stroke: rgb(140, 198, 240);
+    stroke-width: 1px;
+}
+
+.gratBackground {
+    fill: rgb(112, 187, 240);
 }
 
 
-.leaflet-popup-content p {
-    margin: 0.2em 0;
+.parishes {
+    stroke: rgba(0, 0, 0, 0.7);
+    stroke-width: 0.2px;
+    stroke-linecap: round;
 }
 
+.dropdown {
+    position: absolute;
+    top: 20px;
+    right: 75px;
+    z-index: 10;
+    font-family: Lato, sans-serif;
+    font-size: 1.2em;
+    padding: 2px;
+    border: 1px solid #999;
+    background-color: rgb(255, 255, 255);
+}
 
+option {
+    font-weight: normal;
+}
+
+.infolabel {
+    position: absolute;
+    height: 60px;
+    min-width: 100px;
+    color: #fff;
+    background-color: #000;
+    border: solid thin #fff;
+    padding: 10px 10px;
+    top: -75px;
+    font-family: sans-serif;
+}
+
+.infolabel h2 {
+    margin: 0 20px 0 0;
+    padding: 5;
+    display: inline-block;
+    line-height: 1em;
+    font-family: sans-serif;
+}
+
+.infolabel h3 {
+    margin: 0 20px 0 0;
+    padding: 5;
+    display: inline-block;
+    line-height: 1em;
+    font-family: sans-serif;
+}
+
+#metadata {
+    font-family: Lato, sans-serif;
+    font-size: 0.6em;
+}

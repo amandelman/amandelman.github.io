@@ -1,459 +1,547 @@
-// Javascript by Adam Mandelman, 2016
+/* d3_coordinated_viz main.js */
 
-function createMap(){
-//initialize the map on the "map" div with a given center aand zoom level
-    var map = L.map("map").setView([32.5, -80], 4);
-
-//load and display a tile layer on the map
-    var Stamen_Toner = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.{ext}', {
-	       attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> and <a href="http://www.cfr.org/interactives/GH_Vaccine_Map/#introduction">Council on Foreign Relations</a>, "Vaccine-Preventable Outbreaks," 2015. Sequencer buttons courtesy of Clockwise.',
-	       subdomains: 'abcd',
-	       minZoom: 4,
-	       maxZoom: 5,
-	       ext: 'png'
-    }).addTo(map);
-
-    getData(map);
-};
-
-
-//calculate the radius of each proportional symbol
-function calcPropRadius(attValue) {
-    //scale factor to adjust symbol size evenly
-    var scaleFactor = 5;
-    //area based on attribute value and scale factor
-    var area = attValue * scaleFactor;
-    //radius calculated based on area
-    var radius = Math.sqrt(area/Math.PI);
-
-    return radius;
-};
-
-function createPopup(properties, attribute, layer, radius){
+//wrap everything in a self-executing anonymous function to move to local scope
+(function(){
     
-    year = attribute.split("es")[1];
+    //pseudo global variables
+    var attCsvArray = ["petrochemDensity2014", "toxicsPP2010_2013", "releases_per_facility_2014", "wasteDensity2011",  "percentAfAm2010", "percent_poverty_2008"]; //list of attributes to be expressed
     
-//    build popup content string
-    var popupContent = "<p><b><u>" + properties.Outbreak + ", " + year + "</p></b></u>" + "<p><b>State:</b> " + properties.Location + "</p><p><b>" + "Cases" + ":</b> " + properties[attribute] + "</p>";
+    var displayArray = ["Petrochemical Facilities", "Toxic Materials Emitted", "Toxic Releases per Facility", "Hazardous Waste Facilities", "African-American Population", "Percent in Poverty"]
     
-    layer.bindPopup(popupContent);
-            
-};
+    var expressed = attCsvArray[0]; //initial attribute
+    
+    //chart frame dimensions
+    var chartWidth = window.innerWidth*0.46,
+        chartHeight = 406,
+        leftPadding = 35,
+        rightPadding = 2,
+        topBottomPadding = 5,
+        chartInnerWidth = chartWidth - leftPadding - rightPadding,
+        chartInnerHeight = chartHeight - topBottomPadding * 2,
+        translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
+    
+    //create a scale to size bars appropriately to frame and for axis
+    var yScale = d3.scale.linear()
+        .range([chartHeight-10, 0])
+        .domain([0, 0.085]);
 
 
-//function to convert markers to circle markers
-function pointToLayer(feature, latlng, attributes){
-    //Determine which attribute to visualize with proportional symbols
-    attribute = attributes[0];
-    
-            
-    if (feature.properties.Outbreak == "Whooping Cough"){
-    
-    //create marker options
-        var options = {
-            fillColor: "#21e1f1",
-            weight: 0,
-            opacity: 0.6,
-            fillOpacity: 0.4
-        }
-    
-    } else if (feature.properties.Outbreak == "Measles")  {
-        var options = {
-            fillColor: "#bf0110",
-            weight: 0,
-            opacity: 0.6,
-            fillOpacity: 0.6
-        }
+    //execute script when window is loaded
+    window.onload = setMap();
+
+    //set up choropleth map
+    function setMap(){
+
+        //map frame dimensions
+        var width = window.innerWidth*0.48,
+            height = 670;
+
+        //svg container for map
+        var map = d3.select("body")
+            .append("svg")
+            .attr("class", "map")
+            .attr("width", width)
+            .attr("height", height);
+
+        //Albers equal area projection centered on Louisiana
+        var projection = d3.geo.albers()
+            .center([0, 31])
+            .rotate([91.5, 0 , 0])
+            .parallels([28, 34])
+            .scale(width*12.5)
+            .translate([width/2, height/2]);
+
+        var path = d3.geo.path()
+            .projection(projection);
+
+        //use queue.js to load data asynchronously in parallel
+        var q = d3_queue.queue()
+            q
+            .defer(d3.csv, "data/d3_multivariate_data.csv") //load attributes from csv
+            .defer(d3.json, "data/states-merged.topojson") //load surrounding states data
+            .defer(d3.json, "data/louisiana_parishes_fixed.topojson") //load choropleth spatial data
+            .await(callback);
         
-    } else if (feature.properties.Outbreak == "Mumps") {
-        var options = {
-            fillColor: "#a236ff",
-            weight: 0,
-            opacity: 0.6,
-            fillOpacity: 0.6
-        }        
+        //callback function to use data once loaded
+        function callback(error, csvData, background, louisiana){    
+            //place graticule
+            setGraticule(map, path);
+            
+            //translate louisiana and background topoJSONs
+            var backgroundStates = topojson.feature(background, background.objects.merged)
+                louisianaParishes = topojson.feature(louisiana, louisiana.objects.louisiana_parishes_fixed).features
+            
+             //add background states to the map
+            var states = map.append("path")
+                .datum(backgroundStates)
+                .attr("class", "states")
+                .attr("d", path);
+            
+            //join CSV data to GeoJSON enumeration unites
+            louisianaParishes = joinData(louisianaParishes, csvData);
+            
+            //create the color scale
+            var colorScale = makeColorScale(csvData);
+            
+            //add enumeration units to the map
+            setEnumerationUnits(louisianaParishes, map, path, colorScale);
+            
+            //add coordinated visualization to the map
+            setChart(csvData, colorScale, louisianaParishes);
+            
+            createDropdown(csvData);
         
-    } else {
-        var options = {
-            fillColor: "#f0e823",
-            weight: 0,
-            opacity: 0.6,
-            fillOpacity: 0.8
-        }       
-        
-    }
+        };
+    }; //end of setMap()
     
-//For each feature, determine its value for the selected attribute
-//var attValue = Number(layer.feature.properties[attribute]);
-    var attValue = Number(feature.properties[attribute]);
+    //function to create color scale generator
+    function makeColorScale(data){
+        var colorClasses =      ['#f1eef6','#d4b9da','#c994c7','#df65b0','#dd1c77','#980043'];
     
-    //Give each feature's circle marker a radius based on its attribute value
-    options.radius = calcPropRadius(attValue);
+        //create color scale generator
+        var colorScale = d3.scale.quantile()
+            .range(colorClasses);
 
-    //create circle marker layer
-    var layer = L.circleMarker(latlng, options);
+        //build array of all values of the expressed attribute for a quantile scale
+        var domainArray = [];
+        for (var i=0; i<data.length; i++){
+            var val = parseFloat(data[i][expressed]);
+            domainArray.push(val);
+        };
 
-    createPopup(feature.properties, attribute, layer, options.radius);
-    
-    //return the circle marker to the L.geoJson pointToLayer option
-    return layer;
-};
+        //assign array of expressed values as scale domain
+        colorScale.domain(domainArray);
 
-//Add circle markers for point features to the map
-function createPropSymbols(data, map, attributes){
-    
-    //sort circle layer order for 2015 to address California pop-up problem
-    data.features.sort(function(a,b) {
-        b.properties.Cases2015 - a.properties.Cases2015;    
-    });
-    
-    //create a Leaflet GeoJSON layer and add it to the map
-    L.geoJson(data, {
-        pointToLayer: function(feature, latlng){
-            return pointToLayer(feature, latlng, attributes);
-        }
-        
-    }).addTo(map);
-    
-};
+        return colorScale;
 
-//Step 1: Create new sequence controls
-function createSequenceControls(map, attributes){
-    
-    //create a new SequenceControl Leaflet class
-    var SequenceControl = L.Control.extend({
-        options: {
-            position: "bottomleft"
-        },
-        
-        onAdd: function(map){
-            //create the control container with my control class name
-            var container = L.DomUtil.create("div", "sequence-control-container");
-            
-            //create range slider control
-            $(container).append('<input class="range-slider" type="range">');
-            $(container).append('<button class="skip" id="reverse">Reverse</button>');
-            $(container).append('<button class="skip" id="forward">Skip</button>');
-            $(container).append('<button type="button" class="btn all">All</button>');
-            $(container).append('<button type="button" class="btn whooping">Whooping Cough</button>');
-            $(container).append('<button type="button" class="btn measles">Measles</button>');
-            $(container).append('<button type="button" class="btn mumps">Mumps</button>');
-            $(container).append('<button type="button" class="btn pox">Chicken Pox</button>');
-           
-            //kill any mouse event listeners on the map
-            $(container).on('mousedown dblclick', function(e){
-                L.DomEvent.stopPropagation(e);
-            });
-            
-            return container;
-        }
-    
-    });
-    
-    map.addControl(new SequenceControl());
-    
-    //set slider attributes
-    $('.range-slider').attr({
-        max: 7,
-        min: 0,
-        value: 0,
-        step: 1
-    });
-
-    $('#reverse').html('<img src="img/reverse.png">');
-    $('#forward').html('<img src="img/forward.png">');
-    
-    $('.skip').click(function(){
-        //get the old index value
-        var index = $('.range-slider').val();
-
-        //increment or decrement depending on button clicked
-        if ($(this).attr('id') == 'forward'){
-            index++;
-            //if past the last attribute, wrap around to first attribute
-            index = index > 7 ? 0 : index;
-        } else if ($(this).attr('id') == 'reverse'){
-            index--;
-            //if past the first attribute, wrap around to last attribute
-            index = index < 0 ? 7 : index;
-        }
-
-        //update slider
-        $('.range-slider').val(index);
-       
-        //pass new attribute to update symbols
-        updatePropSymbols(map, attributes[index]);
-    });
-    
-    //input listener for slider
-    $('.range-slider').on('input', function(){
-        
-        //get the new index value
-        var index = $(this).val();
-        
-        //pass new attribute to update symbols
-        updatePropSymbols(map, attributes[index]);
-    });
-};
-
-//resize proportional symbols according to new attribute values
-function updatePropSymbols(map, attribute){
-    
-    map.eachLayer(function(layer){
-        if (layer.feature && String(layer.feature.properties[attribute])){
-        
-            //access feature properties
-            var props = layer.feature.properties;
-            
-            //update the layer style and popup
-            var radius = calcPropRadius(props[attribute]);
-            layer.setRadius(radius);
- 
-    createPopup(props, attribute, layer, radius);
-            
-        }
-    });
-    
-    $('.btn').click(function(layer){
-        //Set a disease variable to equal whatever button is clicked
-        var disease = $(this).html();    
-    });
-    
-    updateLegend(map, attribute);
-    
-};
-
-//build an attributes array from the data
-function processData(data){
-    //empty array to hold attributes
-    var attributes = [];
-
-    //properties of the first feature in the dataset
-    var properties = data.features[0].properties;
-    
-    //push each attribute name into attributes array
-    for (var attribute in properties){
-        //only take attributes with population values
-        if (attribute.indexOf("Cases") > -1){
-            attributes.push(attribute);
-        }  
-    }
-        
-    return attributes;
-    
-};
-
-//Import GeoJSON data
-function getData(map){
-    //load the data
-    $.ajax("data/vaccine-preventable-disease-outbreaks.geojson", {
-        dataType: "json",
-        success: function(response){
-            var attributes = processData(response);
-            
-            createPropSymbols(response, map, attributes);
-            createSequenceControls(map, attributes);
-            createFilterButtons(map, response);
-            createLegend(map, attributes);
-            createContextContainer(map, attributes)
-        }
-    });
-};
-
-
-//Fifth interaction operator
-function createFilterButtons(map, data){    
-    
-    //Create a layergroup container for layers we're going to remove.
-    var filterHolder = L.layerGroup();
-        
-    //Listen for button clicks
-    $('.btn').click(function(layer){
-        //Set a disease variable to equal whatever button is clicked
-        var disease = $(this).html();
-    
-        //Add each layer from the removed layers layergroup to the map
-        filterHolder.eachLayer(function(layer){
-           map.addLayer(layer); 
-        });
-        
-        //Run through each layer to see what kind of Outbreak
-        map.eachLayer(function(layer){
-            //select layers with outbreak property and set variable outbreak to equal that property
-            if (layer.feature && String(layer.feature.properties.Outbreak)){      
-                var outbreak = layer.feature.properties.Outbreak;
-                
-                //if the "all" button is clicked, add ALL layers to the removed layer layergroup
-                if (disease === "All") {
-                    filterHolder.eachLayer(function(layer){
-                        map.addLayer(layer);
-                    });
-                
-                //otherwise, if specific disease button is clicked, remove all *other* layers and add them to the removed layer layergroup
-                } else if (outbreak != disease){
-                    filterHolder.addLayer(layer);
-                    map.removeLayer(layer);
-                }               
-            }
-        });
-    
-    });
-}
-
-//function to create legend
-function createLegend(map, attributes){
-    
-    attribute = attributes[0];
-    
-    var LegendControl = L.Control.extend({
-        options: {
-            position: "bottomright"
-        },
-        
-        onAdd: function(map){
-            //create legened control container with it's own class name
-            var container = L.DomUtil.create("div", "legend-control-container");
-            
-            //add temporal legand div to container
-            $(container).append('<div id = "temporal-legend">');
-            
-            //create variable to hold svg code--with its own class--as a string
-            var svg = '<svg id="attribute-legend" width="350px" height="280px">';
-            
-            //Object to base loop on
-            var circles = {
-                Maximum: 218,
-                Mean: 248,
-                Minimum: 278
-            };
-            
-            //loop to add each circle and text to svg string
-            for (var circle in circles){
-                //update circle string
-                svg += '<circle class="legend-circle" id="' + circle + '" circle opacity="0.3" fill="#808080" cx="140"/>';
-            
-                //create text id in attribute legend
-                svg += '<text id="' + circle + '-text" x="200" y="' + circles[circle] + '"></text>';
-            };
-                
-            //close svg string
-            svg += "</svg>";
-            
-            //add attribute legend svg to container
-            $(container).append(svg);
-            
-            //kill any mouse event listeners on the map
-            $(container).on('mousedown dblclick', function(e){
-                L.DomEvent.stopPropagation(e);
-            });
-            
-        return container;          
-        }
-    });
-    
-    map.addControl(new LegendControl());
-    
-    //create temporal legend text
-    var year = attribute.split("es")[1];
-    
-    var content = "<h3><b>" + "Vaccine-Preventable Disease Outbreaks, " + year + "</b></h3>";
-            
-    //add temporal legened to temporal div in container
-    $('#temporal-legend').append(content);  
-    
-    updateLegend(map, attributes[0]);
-};
-
-//calculate max, Mean, min values for attrubute legend circles
-function getCircleValues(map, attribute){
-    //start with min as highest and max as lowest
-    var Minimum = Infinity;
-    var Maximum = -Infinity;
-          
-    map.eachLayer(function(layer){
-
-        //get the attribute value
-        if(layer.feature){
-            var attributeValue = Number(layer.feature.properties[attribute]);
-            
-            //test for Minimum
-            if (attributeValue < Minimum && attributeValue > 0){
-                Minimum = attributeValue;
-            }
-            
-            //test for Maximum
-            if(attributeValue > Maximum){
-                Maximum = attributeValue;
-            } 
-        }
-        
-    });
-    
-    //set Mean
-    var Mean = (Maximum + Minimum) / 2;
-    
-    //return values as an object
-    return {
-        Maximum: Maximum,
-        Mean: Mean,
-        Minimum: Minimum
     };
     
-};
-
-//update temporal legend. Need to fix first index value.
-function updateLegend(map, attribute){
+    //function to test for data value and return grey color if no data
+    function testDataValue(props, colorScale){
+        //make sure attribute value is a number
+        var val = parseFloat(props[expressed]);
+        //if attribute value exists, assign a color; otherwise assign gray
+        if (val && val !=NaN){
+            return colorScale(val);
+        } else {
+            return "#d3d3d3";
+        };
+    };
     
-    //create dynamically updating legend content
-    var year = attribute.split("es")[1];
-    var content = "<h3><b>" + "Vaccine-Preventable Disease Outbreaks, " + year + "</b></h3>" + "<br>";
-    
-    //replace legend content
-    $('#temporal-legend').html(content);
+    //function to create coordinated bar chart
+    function setChart(csvData, colorScale){
+        //create a second SVG element to hold the bar chart
+        var chart = d3.select("body")
+            .append("svg")
+            .attr("width", chartWidth)
+            .attr("height", chartHeight + 10)
+            .attr("class", "chart");
         
-    var circleValues = getCircleValues(map, attribute);
-    
-    for (var key in circleValues){
-        //get the radius
-        var radius = calcPropRadius(circleValues[key]);
-
-        //Step 3: assign the cy and r attributes
-        $('#'+key).attr({
-            cy: 279 - radius,
-            r: radius
-        });
-    
-        //Add legend text to text id in attribute legend
-        $('#'+key+'-text').text(key + ": " + Math.round(circleValues[key]*100)/100 + " Cases");
-    }
-    
-};
-
-function createContextContainer(map, attributes){
-    
-    //create a new SequenceControl Leaflet class
-    var ContextContainer = L.Control.extend({
-        options: {
-            position: "topright"
-        },
+        //create a rectangle for chart background fill
+        var chartBackground = chart.append("rect")
+            .attr("class", "chartBackground")
+            .attr("width", chartInnerWidth)
+            .attr("height", chartInnerHeight)
+            .attr("transform", translate);
         
-        onAdd: function(map){
-            //create the context container with my context container class name
-            var container = L.DomUtil.create("div", "context-container");
-          
-            $(container).html($("#context"));
-            
-            $(container).on('mousedown dblclick', function(e){
-            L.DomEvent.stopPropagation(e);
+        //set bars for each Louisiana parish
+        var bars = chart.selectAll("bars")
+            .data(csvData)
+            .enter()
+            .append("rect")
+            .sort(function(a,b){
+                return b[expressed]-a[expressed]
+            })
+            .attr("class", function(d){
+                return "bar p" + d.GEOID;
+            })
+            .on("mouseover", highlight)
+            .on("mouseout", dehighlight)
+            .on("mousemove", moveLabel);
+        
+        var desc = bars.append("desc")
+            .text('{"stroke": "none", "stroke-width": "0px"}');
+        
+        //create vertical axis generator
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+
+        //place axis
+        var axis = chart.append("g")
+            .attr("class", "axis")
+            .attr("transform", translate)
+            .call(yAxis);
+        
+        //create frame for chart border
+        var chartFrame = chart.append("rect")
+            .attr("class", "chartFrame")
+            .attr("width", chartInnerWidth)
+            .attr("height", chartInnerHeight)
+            .attr("transform", translate);
+        
+        updateChart(bars, csvData.length, colorScale, yScale);
+        
+    }; //end of setChart
+    
+    //function to create graticule
+    function setGraticule(map, path){
+        //create graticule generator
+        var graticule = d3.geo.graticule()
+            .step([0.5, 0.5]); //place graticule lines every 5 degrees of longitude and latitude
+
+        //create graticule background
+        var gratBackground = map.append("path")
+            .datum(graticule.outline()) //bind graticule background
+            .attr("class", "gratBackground") //assign class for styling
+            .attr("d", path) //project graticule
+
+        //create graticule lines
+        var gratLines = map.selectAll(".gratLines") //select graticule elements that will be created
+            .data(graticule.lines()) //bind graticule lines to each element to be created
+            .enter() //create an element for each datum
+            .append("path") //append each element to the svg as a path element
+            .attr("class", "gratLines") //assign class for styling
+            .attr("d", path); //project graticule lines
+    };
+    
+    //function to join CSV data to spatial data
+    function joinData(louisianaParishes, csvData){
+        //loop through the CSV to assign each set of CSV attribute values to geoJSON parish
+        for (var i=0; i<csvData.length; i++){
+            var csvParish = csvData[i]; //the current parish
+            var csvKey = csvParish.GEOID; //the CSV primary key
+
+            //loop through geoJSON to find correct parish
+            for (var a=0; a<louisianaParishes.length; a++){
+                var geoProps = louisianaParishes[a].properties; //current geoJSON properties
+                var geoKey = geoProps.GEOID //geoJSON primary key
+
+                //where primary keys match, transfer CSV data to geoJSON properties objects
+                if (geoKey == csvKey){
+
+                    //assign all attributes and values
+                    attCsvArray.forEach(function(attr){
+                        var val = parseFloat(csvParish[attr]); //get CSV attribute value
+                        geoProps[attr] = val; //assign attribute and value to geoJSON properties
+                    });
+                };
+            };
+        };
+        
+        return louisianaParishes;
+    };
+    
+    //function to draw enumeration units
+    function setEnumerationUnits(louisianaParishes, map, path,  colorScale){
+        //add Louisiana parishes to the map
+        var parishes = map.selectAll(".parishes")
+            .data(louisianaParishes)
+            .enter()
+        
+            .append("path")
+            .attr("class", function(d){
+                return "parishes p" + d.properties.GEOID;
+            })
+            .attr("d", path)
+            .style("fill", function(d){
+                return testDataValue(d.properties, colorScale);
+            })
+            .on("mouseover", function(d){
+                highlight(d.properties);
+            })
+            .on("mouseout", function(d){
+                dehighlight(d.properties);
+            })
+            .on("mousemove", moveLabel);
+        
+        var desc = parishes.append("desc")
+            .text('{"stroke": "rgba(0, 0, 0, 0.7)", "stroke-width": "0.2px", "stroke-linecap": "round"}');
+    };     
+
+    function createDropdown(csvData){
+        //add select element
+        var dropdown = d3.select("body")
+            .append("select")
+            .attr("class", "dropdown")
+            .on("change", function(){
+                changeAttribute(this.value, csvData)
+            })
+        
+        //add initial option
+        var initialOption = dropdown.append("option")
+            .attr("class", "initialOption")
+            .attr("disabled", "true")
+            .text("Select Attribute");
+        
+        //dropdown options
+        var attrOptions = dropdown.selectAll("attrOptions")
+            .data(attCsvArray)
+            .enter()
+            .append("option")
+            .attr("value", function(d){return d})
+            .text(function(d, i){return displayArray[i]});        
+    };
+    
+    //dropdown change listener handler
+    function changeAttribute(attribute, csvData){
+        //change the expressed attribute
+        expressed = attribute;
+        
+        //recreate the color scale
+        var colorScale = makeColorScale(csvData);
+        
+        //recolor enumeration units
+        var parishes = d3.selectAll(".parishes")
+            .transition()
+            .duration(1000)
+            .style("fill", function(d){
+                return testDataValue(d.properties, colorScale);
             });
+        
+        //rescale chart
+        if (attribute == "percent_poverty_2008"){
+            var yScale = d3.scale.linear()
+            .range([chartHeight-10, 0])
+            .domain([0, 48]);
             
-        return container;          
-        }
-    });
+        } else if (attribute == "wasteDensity2011") {
+            var yScale = d3.scale.linear()
+            .range([chartHeight-10, 0])
+            .domain([0, 0.35]);
+            
+        } else if (attribute == "petrochemDensity2014") {
+            var yScale = d3.scale.linear()
+            .range([chartHeight-10, 0])
+            .domain([0, 0.085]);
+            
+        } else if (attribute == "toxicsPP2010_2013") {
+            var yScale = d3.scale.linear()
+            .range([chartHeight-10, 0])
+            .domain([0, 435]);
+        
+        } else if (attribute == "releases_per_facility_2014") {
+            var yScale = d3.scale.linear()
+            .range([chartHeight-10, 0])
+            .domain([0, 29]);
+            
+        } else {
+            var yScale = d3.scale.linear()
+            .range([chartHeight-10, 0])
+            .domain([0, 75]);
+            
+        };
+        
+        //re-sort bars
+        var bars = d3.selectAll(".bar")
+            //re-sort bars
+            .sort(function(a,b){
+                return b[expressed]-a[expressed]
+            })
+            .transition()
+            .delay(function(d,i){
+                return i * 20
+            })
+            .duration(500);
+        
+        updateChart(bars, csvData.length, colorScale, yScale);
+   
+    };//end changeAttribute
     
-    map.addControl(new ContextContainer());
-};
+    function updateChart(bars, n, colorScale, yScale){
+        //count number of zeroes and set a variable equal to that total
+        var currentAttTotal = 0;
+        
+        bars.each(function(d,i) {
+            if(d[expressed] != 0) {
+                currentAttTotal++;
+            }
+        });
 
-$(document).ready(createMap);
-
-
+        n = currentAttTotal;
+        
+        //position bars
+        bars.attr("x", function (d, i){
+            console.log(d[expressed])
+                return i*(chartInnerWidth/n) + leftPadding;
+            })
+        //size/resize bars
+            .attr("height", function(d, i){
+                return chartHeight - yScale(parseFloat(d[expressed]))
+            })  
+            .attr("y", function(d){
+                return yScale(parseFloat(d[expressed])) - topBottomPadding;
+            })
+             
+        //color/recolor bars, remove bars with a value of 0, re-set bar width to account for removed bars
+            .style("fill", function(d){
+                return testDataValue(d, colorScale)
+            })
+            .attr("width", function (d, i){
+                if (d[expressed] == 0){
+                    return 0;
+                    } else {return chartInnerWidth/n - 0.5;}
+                })    
+            .style('display', function(d){
+                if(d[expressed] == 0) {
+                    return 'none'
+                }
+            });
+        
+        
+        //recreate y axis
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+        
+        //place axis
+        var axis = d3.selectAll("g.axis")
+            .call(yAxis);
+        
+        //update title to reflect variable selected from dropdown
+        if (expressed == "percent_poverty_2008"){
+            var updatedTitle = "Percent of Population in Poverty, 2008"
+            
+            } else if (expressed == "wasteDensity2011") {
+                
+            var updatedTitle = "Hazardous Waste Facilities per Parish Square Mile, 2011"
+            
+            } else if (expressed == "petrochemDensity2014") {
+                
+            var updatedTitle = "Petrochemical Facilities per Parish Square Mile, 2014"
+            
+            } else if (expressed == "toxicsPP2010_2013") {
+                
+            var updatedTitle = "Pounds of Toxic Substances Releases per Person, 2010-2013"
+            
+            } else if (expressed == "releases_per_facility_2014") {
+                
+            var updatedTitle = "Toxic Releases per Facility by Parish, 2014"
+            } else {
+                
+            var updatedTitle = "Percent African-American Population by Parish, 2010"
+            }
+        
+        var chartTitle = d3.select(".chartTitle")
+            .text(updatedTitle);
+        
+          d3.select('.subheader').html(updatedTitle)
+        
+    };//end updateChart
+     
+    //highlight
+    function highlight(props){
+        //change stroke
+        var selected = d3.selectAll(".p" + props.GEOID)
+        .style("stroke", "#000000")
+        .style("stroke-width", "2")
+        
+        setLabel(props);
+    };
+    
+    //dehighlight
+    function dehighlight(props){
+        var selected = d3.selectAll(".p" + props.GEOID)
+            .style({
+                "stroke": function(){
+                    return getStyle(this, "stroke")
+                },
+                "stroke-width": function(){
+                    return getStyle(this, "stroke-width")
+                }
+            });
+        
+        function getStyle(element, styleName){
+            var styleText = d3.select(element)
+            .select("desc")
+            .text();
+            
+            var styleObject = JSON.parse(styleText);
+            
+            return styleObject[styleName];
+        };
+        
+        d3.select(".infolabel")
+            .remove();
+    };
+    
+    //set dynamic label
+    function setLabel(props){
+        //label content
+        
+        //Update title on label depending on selected variable
+        if (expressed == "percent_poverty_2008"){
+            var updatedTitle = "Percent in Poverty, 2008"
+            
+            } else if (expressed == "wasteDensity2011") {
+                
+            var updatedTitle = "Hazardous Waste Facilities per Square Mile in 2011"
+            
+            } else if (expressed == "petrochemDensity2014") {
+                
+            var updatedTitle = "Petrochemical Facilities per Square Mile in 2014"
+            
+            } else if (expressed == "toxicsPP2010_2013") {
+                
+            var updatedTitle = "Pounds of Toxic Substances Released per Person, 2010-2013"
+            
+            } else if (expressed == "releases_per_facility_2014") {
+                
+            var updatedTitle = "Toxic Releases per Facility in 2014"
+            } else {
+                
+            var updatedTitle = "Percent African-American in 2010"
+            }
+        
+        //Make 0 values display as "No Data" to avoid NaNs
+        var cleanseLabel = function(ex) {
+            if(ex === 0) {
+                return "No Data"
+            } else {
+                return ex
+            }
+        }       
+        
+        //create label text
+        var labelAttribute = "<h2>" + cleanseLabel(props[expressed]) + "</h2><br><h3>" + updatedTitle + "</h3>";
+        //create info label div
+        var infolabel = d3.select("body")
+            .append("div")
+            .attr({
+                "class": "infolabel",
+                "id": props.GEOID + "_label"
+            })
+            .html(labelAttribute);
+                
+        var parishName = infolabel.append("div")
+            .attr("class", "labelname")
+            .html("Parish: " + props.NAME);
+    };
+    
+    //function to move info label with mouse
+    function moveLabel(){
+        //get width of label
+        var labelWidth = d3.select(".infolabel")
+            .node()
+            .getBoundingClientRect()
+            .width;
+        
+        //use coordinates of mousemove event to set label locations
+        var x1 = d3.event.clientX + 10,
+            y1 = d3.event.clientY - 75,
+            x2 = d3.event.clientX - labelWidth - 10,
+            y2 = d3.event.clientY + 25;
+        
+        //horizontal label coordinate, testing overflow
+        var x = d3.event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1;
+        //vertical label coordinate, testing overflow
+        var y = d3.event.clientY < 75 ? y2 : y1;
+        
+        d3.select(".infolabel")
+            .style({
+            "left": x + "px",
+            "top": y + "px"
+        });
+    };
+    
+})();
