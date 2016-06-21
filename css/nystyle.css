@@ -1,0 +1,109 @@
+/* Style Sheet */
+@import url(https://fonts.googleapis.com/css?family=Lato:400,300);
+
+#header {
+    margin: -10px -10px 0px -10px;
+    height: 110px;
+    padding: 2px 0px 4px 75px;
+    background-color: #fbeecc;
+    width: 110%;
+}
+
+h1 {
+    font-size: 3em;
+}
+
+body {
+    font-family: Lato, sans-serif;
+    background-color: white;
+}
+
+#new-york-text {
+/*    display: inline-block;*/
+    padding-left: 20px;
+    padding-right: 15px;
+    width: 43%;
+    float: left;
+}
+
+#new-york-map {
+    height: 615px;
+    width: 52%;
+    float: left;
+    border-color: #999;
+    border-style: solid;
+    border-width: thin;
+    margin-top: 15px;
+    margin-right: -10px;
+/*    display: inline-block;*/
+}
+
+.leaflet-popup-content p {
+    font-family: Lato, sans-serif;
+    font-size: 1.2em;
+    margin: 0.2em 0;
+    color: white;
+    background-color: black;
+}
+
+.leaflet-popup-content-wrapper {
+    background-color: black;
+    border-radius: 15px;
+}
+
+.leaflet-popup-tip {
+    background-color: black;
+}
+
+.sequence-control-container-ny {
+    width: 145px;
+    padding: 5px;
+    float: left;
+    display: block;
+    background-color: rgba(167, 167, 167, 0.6);
+	padding: 10px;
+	text-align: center;
+	border: solid gray 1px;
+    border-radius: 5px;
+}
+
+/*NYbutton styles*/
+.nybtn {
+    font-family: Lato, sans-serif;
+    font-size: 1em;
+    width: 120px;
+    display: block;
+    float: left;
+    margin: 2px 2px;
+    border-radius: 6px;
+    border-color: rgba(128, 128, 128, 0.7);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    opacity: 0.85;
+}
+
+.nybtn-selected {
+    border-color: #565656;
+    border-width: 3px;
+    border-radius: 6px;
+    opacity: 1;
+}
+
+.under75 {
+    background-color: #d7191c;
+}
+
+.b75-85 {
+    background-color: #fc8d59;
+}
+
+.b85-95 {
+    background-color: #fadb86;
+}
+
+.over95 {
+    background-color: #47bcbf;
+}
+
+.all {
+    background-color: rgb(185, 185, 185);
+}
