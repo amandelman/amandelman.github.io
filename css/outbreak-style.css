@@ -1,0 +1,176 @@
+/* Stylesheet by Adam Mandelman, 2016 */
+
+body {
+    background-color: black;
+}
+
+p {
+    margin: 0;
+    padding: 2px;
+}
+
+#header {
+    width: 100%;
+    background-color:black;
+    color: white;
+    font-family: "Impact", "Charcoal", sans-serif;
+    text-align: left;
+    font-size: 5em;
+    padding-left: 70px;
+/*    padding: 0px, 0px, 0px, 0px;*/
+    display: inline-block;
+}
+
+
+#tagline {
+    height: 40px;   
+    color: white;
+    font-family: "Open Sans", sans-serif;
+    text-align: left;
+    font-size: 1.6em;
+    padding-left: 70px;    
+}
+
+#context {
+    color: black;
+    font-family: "Open Sans", sans-serif;
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+}
+
+#context-paragraph{
+    font-size: 0.8em;
+    font-weight: normal;
+    text-align: left;
+    
+}
+
+#map {
+    height: 600px;
+    width: 100%;
+    display: inline-block;    
+    border-color: white;
+    border-style: solid;    
+}
+
+
+#Mean-text {
+    font-weight: bold;
+}
+
+#Maximum-text {
+    font-weight: bold;
+}
+
+#Minimum-text {
+    font-weight: bold;
+}
+
+.context-container {
+    width: 370px;
+    height: 215px;
+    background-color: rgba(255,255,255,1);
+    text-align: left;
+    padding-left: 10px;
+    border: solid gray 1px;
+}
+
+.legend-control-container {
+    width: 380px;
+    height: 340px;
+    background-color: rgba(255,255,255,1);
+    padding: -20px;
+    line-height: 45px;
+    text-align: center;
+    border: solid gray 1px;
+}
+
+#temporal-legend {
+    width: 380px;
+    height: 20px;
+    color: black;
+    background-color: rgba(255,255,255,1);
+    padding: 0px;
+    line-height: 20px;
+    text-align: center;
+}
+
+.sequence-control-container {
+    width: 338px;
+    height: 65px;
+    background-color: rgba(255,255,255,1);
+    padding: 10px;
+    line-height: 45px;
+    text-align: center;
+    border: solid gray 1px;
+}
+
+.range-slider {
+    width: 200px;
+}
+
+.all {
+    background-color: rgb(128, 128, 128);
+    float:left;
+    margin: 0px 1px;
+    border-radius: 4px;
+    border-color: rgba(128, 128, 128, 0.7);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.whooping {
+/*    font-family: Helvetica, sans-serif;*/
+    background-color: rgba(33, 225, 241, 0.9);    
+    float:left;
+    margin: 0px 1px;
+    border-radius: 4px;
+    border-color: rgba(33, 225, 241, 0.4);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.measles {
+    background-color: rgba(191, 1, 16, 0.6);
+    float:left;
+    margin: 0px 1px;
+    border-radius: 4px;
+    border-color: rgba(191, 1, 16, 0.6);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.mumps {
+    background-color: rgba(162, 54, 255, 0.6);
+    float:left;
+    margin: 0px 1px;
+    border-radius: 4px;
+    border-color: rgba(162, 54, 255, 0.6);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.pox {
+    background-color: rgba(240, 232, 35, 0.8);
+    float:left;
+    margin: 0px 1px;
+    border-radius: 4px;
+    border-color: rgba(240, 232, 35, 0.8);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.range-slider {
+    width: 68%;
+}
+
+#forward {
+    float: right;
+}
+
+#reverse {
+    float: left;
+}
+
+
+.leaflet-popup-content p {
+    margin: 0.2em 0;
+}
+
+
