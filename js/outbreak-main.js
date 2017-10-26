@@ -6,7 +6,7 @@ function createMap(){
 
 //load and display a tile layer on the map
     var Stamen_Toner = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.{ext}', {
-	       attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> and <a href="http://www.cfr.org/interactives/GH_Vaccine_Map/#introduction">Council on Foreign Relations</a>, "Vaccine-Preventable Outbreaks," 2015. Sequencer buttons courtesy of Clockwise.',
+	       attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> and <a href="http://www.cfr.org/interactives/GH_Vaccine_Map/#introduction">CFR</a>, "Vaccine-Preventable Outbreaks," 2015. Sequencer buttons courtesy of Clockwise.',
 	       subdomains: 'abcd',
 	       minZoom: 4,
 	       maxZoom: 5,
@@ -120,6 +120,10 @@ function createPropSymbols(data, map, attributes){
 //Step 1: Create new sequence controls
 function createSequenceControls(map, attributes){
     
+    attribute = attributes[0];
+    
+
+    
     //create a new SequenceControl Leaflet class
     var SequenceControl = L.Control.extend({
         options: {
@@ -130,21 +134,38 @@ function createSequenceControls(map, attributes){
             //create the control container with my control class name
             var container = L.DomUtil.create("div", "sequence-control-container");
             
-            //create range slider control
+//            $(container).append('<div id = "sequence-year">');
+            
+             $(container).append('<div id = "temporal-legend">');
+            
+//            //create range slider control
+//            
+//            var seqyear = attribute.split("es")[1];
+//    
+//            var seqcontent = "<h3><b>" + "Outbreaks Over Time: " + year + "</b></h3>";
+//            
+//            console.log(year);
+            
+            
+            $('#sequence-year').html('<img src="img/reverse.png">');
+            
+            
+           
             $(container).append('<input class="range-slider" type="range">');
             $(container).append('<button class="skip" id="reverse">Reverse</button>');
             $(container).append('<button class="skip" id="forward">Skip</button>');
-            $(container).append('<button type="button" class="btn all">All</button>');
+            $(container).append('<button type="button" class="btn btn-begin all">All</button>');
             $(container).append('<button type="button" class="btn whooping">Whooping Cough</button>');
             $(container).append('<button type="button" class="btn measles">Measles</button>');
             $(container).append('<button type="button" class="btn mumps">Mumps</button>');
             $(container).append('<button type="button" class="btn pox">Chicken Pox</button>');
-           
+                       
             //kill any mouse event listeners on the map
             $(container).on('mousedown dblclick', function(e){
                 L.DomEvent.stopPropagation(e);
             });
             
+    
             return container;
         }
     
@@ -162,6 +183,7 @@ function createSequenceControls(map, attributes){
 
     $('#reverse').html('<img src="img/reverse.png">');
     $('#forward').html('<img src="img/forward.png">');
+//    $('#forward').append("FWD");
     
     $('.skip').click(function(){
         //get the old index value
@@ -255,7 +277,8 @@ function getData(map){
             createSequenceControls(map, attributes);
             createFilterButtons(map, response);
             createLegend(map, attributes);
-            createContextContainer(map, attributes)
+            createContextContainer(map, attributes);
+            clickedButtons();
         }
     });
 };
@@ -315,7 +338,11 @@ function createLegend(map, attributes){
             var container = L.DomUtil.create("div", "legend-control-container");
             
             //add temporal legand div to container
-            $(container).append('<div id = "temporal-legend">');
+//            $(container).append('<div id = "temporal-label">');
+            
+            $(container).append('<b><h5>Outbreak Cases</b></h5>');
+                                        
+                                        
             
             //create variable to hold svg code--with its own class--as a string
             var svg = '<svg id="attribute-legend" width="350px" height="280px">';
@@ -358,7 +385,7 @@ function createLegend(map, attributes){
     
     var content = "<h3><b>" + "Vaccine-Preventable Disease Outbreaks, " + year + "</b></h3>";
             
-    //add temporal legened to temporal div in container
+    //add temporal legend to temporal div in container
     $('#temporal-legend').append(content);  
     
     updateLegend(map, attributes[0]);
@@ -408,6 +435,7 @@ function updateLegend(map, attribute){
     var year = attribute.split("es")[1];
     var content = "<h3><b>" + "Vaccine-Preventable Disease Outbreaks, " + year + "</b></h3>" + "<br>";
     
+    
     //replace legend content
     $('#temporal-legend').html(content);
         
@@ -426,7 +454,6 @@ function updateLegend(map, attribute){
         //Add legend text to text id in attribute legend
         $('#'+key+'-text').text(key + ": " + Math.round(circleValues[key]*100)/100 + " Cases");
     }
-    
 };
 
 function createContextContainer(map, attributes){
@@ -453,6 +480,18 @@ function createContextContainer(map, attributes){
     
     map.addControl(new ContextContainer());
 };
+
+//function to give "button clicked" visual affordance
+function clickedButtons(){
+    $(".btn").click(function (){
+       $(".btn.btn-begin").removeClass("btn-begin"),
+        $(this).addClass("btn-selected")
+    });
+    $(".btn").click(function (){
+        $(".btn.btn-selected").removeClass("btn-selected"),
+        $(this).addClass("btn-selected")
+    });
+}
 
 $(document).ready(createMap);
 

@@ -9,6 +9,12 @@ p {
     padding: 2px;
 }
 
+h5 {
+    font-size: 1.3em;
+    margin-bottom: -5px;
+    margin-top: -5px;
+}
+
 #header {
     width: 100%;
     background-color:black;
@@ -77,28 +83,41 @@ p {
 }
 
 .legend-control-container {
-    width: 450px;
-    height: 340px;
+    width: 370px;
+    height: 330px;
     background-color: rgba(255,255,255,1);
-    padding: -20px;
+    padding-left: 10px;
+    padding-bottom: -55px;
     line-height: 45px;
     text-align: center;
     border: solid gray 1px;
 }
 
 #temporal-legend {
-    width: 380px;
+    width: 450px;
     height: 20px;
     color: black;
     background-color: rgba(255,255,255,1);
-    padding: 0px;
+    padding-bottom: 5px;
     line-height: 20px;
     text-align: center;
 }
 
+/*
+#temporal-label {
+    width: 370px;
+    height: 20px;
+    color: black;
+    background-color: rgba(255,255,255,1);
+    padding-bottom: 5px;
+    line-height: 20px;
+    text-align: center;
+}
+*/
+
 .sequence-control-container {
-    width: 338px;
-    height: 65px;
+    width: 450px;
+    height: 105px;
     background-color: rgba(255,255,255,1);
     padding: 10px;
     line-height: 45px;
@@ -114,6 +133,9 @@ p {
     background-color: rgb(128, 128, 128);
     float:left;
     margin: 0px 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: block;
     border-radius: 4px;
     border-color: rgba(128, 128, 128, 0.7);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
@@ -124,6 +146,7 @@ p {
     background-color: rgba(33, 225, 241, 0.9);    
     float:left;
     margin: 0px 1px;
+    display: block;
     border-radius: 4px;
     border-color: rgba(33, 225, 241, 0.4);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
@@ -133,6 +156,7 @@ p {
     background-color: rgba(191, 1, 16, 0.6);
     float:left;
     margin: 0px 1px;
+    display: block;
     border-radius: 4px;
     border-color: rgba(191, 1, 16, 0.6);
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
@@ -142,6 +166,7 @@ p {
     background-color: rgba(162, 54, 255, 0.6);
     float:left;
     margin: 0px 1px;
+    display: block;
     border-radius: 4px;
     border-color: rgba(162, 54, 255, 0.6);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
@@ -151,9 +176,22 @@ p {
     background-color: rgba(240, 232, 35, 0.8);
     float:left;
     margin: 0px 1px;
+    display: block;
     border-radius: 4px;
     border-color: rgba(240, 232, 35, 0.8);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.btn {
+    opacity: 0.60;
+}
+
+.btn-selected {
+    opacity: 1;
+}
+
+.btn-begin {
+    opacity: 1;
 }
 
 .range-slider {
@@ -162,10 +200,12 @@ p {
 
 #forward {
     float: right;
+    display: block;
 }
 
 #reverse {
     float: left;
+    display: block;
 }
 
 
