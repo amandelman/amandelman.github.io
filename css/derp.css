@@ -1,0 +1,19 @@
+/* Style Sheet */
+@import url(https://fonts.googleapis.com/css?family=Lato:400,300);
+
+#header {
+    margin: -10px -10px 0px -10px;
+    height: 110px;
+    padding: 2px 0px 4px 75px;
+    background-color: white;
+    width: 110%;
+}
+
+h1 {
+    font-size: 3em;
+}
+
+body {
+    font-family: Lato, sans-serif;
+    background-color: white;
+}
