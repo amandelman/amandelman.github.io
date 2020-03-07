@@ -12,7 +12,7 @@
     
     //chart frame dimensions
     var chartWidth = window.innerWidth*0.4,
-        chartHeight = 670,
+        chartHeight = 400,
         leftPadding = 35,
         rightPadding = 2,
         topBottomPadding = 5,
@@ -34,7 +34,7 @@
 
         //map frame dimensions
         var width = window.innerWidth*0.4,
-            height = 670;
+            height = 400;
 
         //svg container for map
         var map = d3.select("body")
