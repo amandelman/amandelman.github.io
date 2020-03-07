@@ -12,7 +12,9 @@ body {
     height: 90px;
     background: #d3d3d3;
 }
-
+#wrapper {
+    width: 400px;
+}
 #context{
     height: 150px;
     position:absolute;
