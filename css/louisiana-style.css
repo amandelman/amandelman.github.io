@@ -10,6 +10,7 @@ body {
 #header {
     height: 90px;
     background: #d3d3d3;
+    padding-left: 20px;
 }
 
 #context{
