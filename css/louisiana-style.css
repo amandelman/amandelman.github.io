@@ -4,7 +4,7 @@
 
 body {
     margin: 0;
-    padding: 0;
+    padding: 20px;
     font-family: Lato, sans-serif;
     color: #3d3d3d;
 }
@@ -19,7 +19,6 @@ body {
 /*     left: 725px; 
     top: 500px; */
     padding-right: 20px;
-    left: 20px;
 }
 
 h1 {
