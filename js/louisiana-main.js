@@ -11,7 +11,7 @@
     var expressed = attCsvArray[0]; //initial attribute
     
     //chart frame dimensions
-    var chartWidth = window.innerWidth*0.46,
+    var chartWidth = window.innerWidth*0.4,
         chartHeight = 406,
         leftPadding = 35,
         rightPadding = 2,
@@ -33,7 +33,7 @@
     function setMap(){
 
         //map frame dimensions
-        var width = window.innerWidth*0.48,
+        var width = window.innerWidth*0.4,
             height = 670;
 
         //svg container for map
